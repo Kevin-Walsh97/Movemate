@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import random
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for cross-origin requests
 
 # Predefined moving packages
 MOVING_PACKAGES = [
@@ -11,10 +13,14 @@ MOVING_PACKAGES = [
     {"id": 4, "name": "Eco Package", "items": ["Reusable Totes", "Recyclable Wrap", "Cloth Covers"]},
 ]
 
+@app.route('/')
+def home():
+    return "Welcome to the Moving Packages API. Use the /api/moving-packages endpoint to generate a package."
+
 @app.route('/api/moving-packages', methods=['POST'])
 def generate_package():
     data = request.json
-    if not data or "mover_name" not in data:
+    if not isinstance(data, dict) or "mover_name" not in data:
         return jsonify({"error": "Invalid input. 'mover_name' is required."}), 400
     
     mover_name = data["mover_name"]
@@ -26,4 +32,4 @@ def generate_package():
     })
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000)
