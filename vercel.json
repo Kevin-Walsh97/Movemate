@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://movemate-py1s.onrender.com"
+      "destination": "https://movemate-py1s.onrender.com/api/$1"
     }
   ]
 }
