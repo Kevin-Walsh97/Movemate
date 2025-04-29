@@ -22,7 +22,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        input[type="text"] {
+        input, select {
             padding: 10px;
             width: 80%;
             margin-bottom: 20px;
@@ -46,23 +46,53 @@
             background-color: #e9ecef;
             border-radius: 4px;
         }
+        .result img {
+            margin-top: 10px;
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Welcome to MoveMate</h1>
-        <p>Enter your name to get a personalized moving package suggestion!</p>
-        <input type="text" id="moverName" placeholder="Enter your name" aria-label="Enter your name">
-        <button id="getPackageButton" aria-label="Get Moving Package">Get Moving Package</button>
+        <p>Fill in the details below to get a personalized moving package!</p>
+        <input type="text" id="name" placeholder="Your Name">
+        <input type="text" id="currentCity" placeholder="Current City">
+        <input type="text" id="futureCity" placeholder="Future City">
+        <select id="bringingBed">
+            <option value="">Are you bringing a bed?</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+        </select>
+        <select id="bringingAppliances">
+            <option value="">Are you bringing appliances?</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+        </select>
+        <select id="apartmentSize">
+            <option value="">Select Apartment Size</option>
+            <option value="Studio">Studio</option>
+            <option value="1-Bedroom">1-Bedroom</option>
+            <option value="2-Bedroom">2-Bedroom</option>
+            <option value="3-Bedroom">3-Bedroom</option>
+        </select>
+        <button id="getPackageButton">Get Moving Package</button>
         <div class="result" id="result"></div>
     </div>
     <script>
         document.getElementById('getPackageButton').addEventListener('click', async () => {
-            const moverName = document.getElementById('moverName').value;
+            const name = document.getElementById('name').value;
+            const currentCity = document.getElementById('currentCity').value;
+            const futureCity = document.getElementById('futureCity').value;
+            const bringingBed = document.getElementById('bringingBed').value;
+            const bringingAppliances = document.getElementById('bringingAppliances').value;
+            const apartmentSize = document.getElementById('apartmentSize').value;
             const resultDiv = document.getElementById('result');
 
-            if (!moverName) {
-                resultDiv.textContent = 'Please enter your name!';
+            if (!name || !currentCity || !futureCity || !bringingBed || !bringingAppliances || !apartmentSize) {
+                resultDiv.textContent = 'Please fill in all fields!';
                 return;
             }
 
@@ -72,20 +102,21 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ mover_name: moverName }),
+                    body: JSON.stringify({ name, current_city: currentCity, future_city: futureCity, bringing_bed: bringingBed, bringing_appliances: bringingAppliances, apartment_size: apartmentSize }),
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    resultDiv.textContent = errorData.error || 'Failed to fetch moving package';
-                    return;
+                    throw new Error('Failed to fetch moving package');
                 }
 
                 const data = await response.json();
                 resultDiv.innerHTML = `
                     <strong>${data.message}</strong>
-                    <p>Package Name: ${data.package.name}</p>
-                    <p>Items: ${data.package.items.join(', ')}</p>
+                    <p><strong>Moving Package:</strong> ${data.moving_package.name} - Items: ${data.moving_package.items.join(', ')}</p>
+                    <p><strong>Moving Company:</strong> ${data.moving_company.name} (${data.moving_company.rate})</p>
+                    <p><strong>Appliance Option:</strong> ${data.appliance_option.name} (${data.appliance_option.price})</p>
+                    <p><strong>Apartment:</strong> ${data.apartment.name} - ${data.apartment.price} - ${data.apartment.dimensions}</p>
+                    <img src="${data.apartment.image}" alt="Apartment Image">
                 `;
             } catch (error) {
                 resultDiv.textContent = 'An error occurred. Please try again later.';
